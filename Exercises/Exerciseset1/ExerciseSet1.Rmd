@@ -3,6 +3,7 @@
 title: "Exercise Set 1"
 author: "T. Evgeniou"
 output: html_document
+runtime: shiny
 ---
 
 
@@ -56,9 +57,11 @@ For more information on downloading finance data from the internet as well as on
 #### Optional Question 
 
 1. Can you find some interesting finance related R package or github repository? 
+
 **Your Answers here:**
-<br>
-<br>
+
+1. "R API for Crawling Stock and Index Data from Sina Finance":
+https://github.com/jincheng9/stock_crawler.git
 
 <hr>
 <hr>
@@ -85,10 +88,10 @@ pnl_plot(SPY)
 3. *(Extra points)* What if we want to also see the returns of another company, say Yahoo!, in the same period? Can you get that data and report the statistics for Yahoo!'s stock, too? 
 
 **Your Answers here:**
-<br>
-<br>
-<br>
-<br>
+
+1. File "dataSet1.R", block For in lines 20-33. Vector mytickers is initialized with AAPL (Apple) on line 8. 
+2. For Apple: the cumulative return in the period is `r round(100*sum(StockReturns[,2]),1)`%; the average daily return is `r round(100*mean(StockReturns[,2]),3)`%; the standard deviation of the daily returns is `r round(100*sd(StockReturns[,2]),3)`%.
+3. For Yahoo: the cumulative return in the period is 276.6%; the average daily return of Yahoo is 0.071%; the standard deviation of the daily returns of Yahoo is 3.064%. 
 
 <hr>
 <hr>
@@ -126,10 +129,15 @@ We can also transpose the matrix of returns to create a new "horizontal" matrix.
 2. Based on the help for the R function *apply* (`help(apply)`), can you create again the portfolio of S&P and Apple and plot the returns in a new figure below?
 
 **Your Answers here:**
-<br>
-<br>
-<br>
-<br>
+
+1. nrow(transposedData); ncol(transposedData); dim(transposedData)
+2. 
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig=TRUE}
+portfolio = apply(StockReturns,1,mean)
+names(portfolio) <- rownames(StockReturns)
+pnl_plot(portfolio)
+```
+
 
 <hr>
 <hr>
@@ -144,10 +152,14 @@ This is an important step and will get you to think about the overall process on
 2. *(Extra Exercise)*  Can you get the returns of a few companies and plot the returns of an equal weighted portfolio with those companies during some period you select? 
 
 **Your Answers here:**
-<br>
-<br>
-<br>
-<br>
+
+1. The parameter startDate is already set to "2001-01-01" in dataSet1.R. The earliest S&P stock price loaded is of 2001-01-02. <Not clear about the question>
+2. Script dataSet1AB.R pulls returns of ```r source("dataSet1AB.R"); mytickers;```. The code below plots the returns of an equal weighted portfolio.
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig=TRUE}
+portfolio = apply(StockReturns,1,weighted.mean)
+names(portfolio) <- rownames(StockReturns)
+pnl_plot(portfolio)
+```
 
 <hr>
 <hr>
@@ -178,10 +190,9 @@ myData + StockReturns[1:40,])
 ```
 
 **Your Answers here:**
-<br>
-<br>
-<br>
-<br>
+
+1. The command returns 20. The rows of myData are not equal to the rows of StockReturns, because each row of myData stores concatenation of column values of StockReturns. Therefore, the logical operation in SUM's argument will return true. Logical true values are regarded as one by the SUM function.
+2. The command results in error because of the attemp to sum up a numerical vector with a non-convertible string.
 
 <hr>
 <hr>
@@ -189,14 +200,23 @@ myData + StockReturns[1:40,])
 ### Extra Question
 
 Can you now load another dataset from some CSV file and report some basic statistics about that data? 
+```{r eval = TRUE, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+cbinvestments<-read.csv("investments.csv",header=TRUE,nrows=1000)
+cbinvestments[,"raised_amount_usd"][is.na(cbinvestments[,"raised_amount_usd"])]<-0
+mystat <- c(max(cbinvestments[,"raised_amount_usd"]),mean(cbinvestments[,"raised_amount_usd"]),sd(cbinvestments[,"raised_amount_usd"]))
+names(mystat)<-c("MaxInvestment","AvgInvestment","StdDev")
+print("Below are basic statistics of a selection of 1,000 investments from CrunchBase:")
+print.table(format(mystat,nsmall=0,scientific = FALSE,big.mark = ","),digits=8)
+print("Some info about the maximum investment:")
+grid.table(cbinvestments[which(cbinvestments[,"raised_amount_usd"] == max(cbinvestments[,"raised_amount_usd"])),c("company_name", "company_category_list","investor_name","funding_round_type")])
+```
 
-<br>
 
 ### Creating Interactive Documents
 
 Finally, just for fun, one can add some interactivity in the report using [Shiny](http://rmarkdown.rstudio.com/authoring_shiny.html).All one needs to do is set the eval flag of the code chunk below (see the .Rmd file) to "TRUE", add the line "runtime: shiny" at the very begining of the .Rmd file, make the markdown output to be "html_document", and then press "Run Document". 
 
-```{r, eval=FALSE, echo = TRUE}
+```{r, eval=TRUE, echo = TRUE}
 sliderInput("startdate", "Starting Date:", min = 1, max = length(portfolio), 
             value = 1)
 sliderInput("enddate", "End Date:", min = 1, max = length(portfolio), 
